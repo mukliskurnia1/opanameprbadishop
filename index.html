@@ -157,11 +157,30 @@
       line-height: 1.35;
     }
 
-    .toolbar {
+    /* GAYA BARU UNTUK PANEL AKSI & KETERANGAN */
+    .action-panel {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 12px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .action-item {
+      text-align: center;
+      background: #f9fafb;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #eaecf0;
+    }
+    .action-item button {
+      width: 100%;
+      margin-top: 0;
+      margin-bottom: 6px;
+    }
+    .action-item small {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.3;
     }
 
     .table-wrap {
@@ -235,7 +254,7 @@
       .grid { grid-template-columns: 1fr; }
       header { align-items: flex-start; flex-direction: column; }
       .status { white-space: normal; }
-      .toolbar { grid-template-columns: 1fr; }
+      .action-panel { grid-template-columns: 1fr; }
       .table-wrap { max-height: none; }
     }
   </style>
@@ -286,12 +305,23 @@
       </section>
 
       <section>
-        <h2>Daftar Scan</h2>
-        <div class="toolbar">
-          <button id="syncBtn" class="btn-success" type="button">Kirim ke Sheet</button>
-          <button id="downloadBtn" type="button">Download SO</button>
-          <button id="clearBtn" class="btn-danger" type="button">Kosongkan</button>
+        <h2>Daftar Scan & Aksi</h2>
+        
+        <div class="action-panel">
+          <div class="action-item">
+            <button id="syncBtn" class="btn-success" type="button">Kirim ke Sheet</button>
+            <small>Kirim data gabungan <b>jika semua orang</b> sudah beres hitung.</small>
+          </div>
+          <div class="action-item">
+            <button id="downloadBtn" type="button">Download SO</button>
+            <small>Download <b>per orang</b> (hanya data hitung milik Anda).</small>
+          </div>
+          <div class="action-item">
+            <button id="clearBtn" class="btn-danger" type="button">Kosongkan</button>
+            <small>Kosongkan <b>semua data gabungan</b> tim di cabang ini.</small>
+          </div>
         </div>
+
         <div class="table-wrap" id="tableWrap">
           <div class="empty">Belum ada data scan.</div>
         </div>
@@ -302,8 +332,7 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // Kosongkan URL karena Tunnel dan Frontend sudah 1 domain yang sama
-    const BACKEND_URL = "https://opnamepribadishop.anntech.my.id";
+    const BACKEND_URL = "";
 
     const $ = (id) => document.getElementById(id);
     const state = {
@@ -340,6 +369,24 @@
         throw new Error(data.pesan || "Request gagal.");
       }
       return data;
+    }
+
+    // FUNGSI PENCATATAN LOG AKTIVITAS (DIAM-DIAM)
+    async function logActivity(aksi) {
+      const payload = {
+        petugas: $("petugas").value.trim() || "Anonim",
+        cabang: $("store").value,
+        aksi: aksi
+      };
+      try {
+        await fetch(BACKEND_URL + "/api/log_action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.log("Gagal mencatat log", err);
+      }
     }
 
     async function checkServer() {
@@ -429,9 +476,7 @@
     }
 
     function renderTable() {
-      // FITUR BARU: Menyaring (Filter) Tabel Berdasarkan Nama Petugas
       const currentPetugas = $("petugas").value.trim().toLowerCase();
-      
       const myRows = state.rows.filter(row => row.petugas.toLowerCase() === currentPetugas);
 
       if (!myRows.length) {
@@ -479,7 +524,10 @@
 
     async function clearRows() {
       const store = $("store").value;
-      if (!confirm(`HATI-HATI! Yakin ingin mengosongkan SEMUA data scan cabang ${store}?`)) return;
+      if (!confirm(`HATI-HATI! Yakin ingin mengosongkan SEMUA data scan tim untuk cabang ${store}?`)) return;
+      
+      logActivity("Klik Tombol KOSONGKAN"); // Catat log
+      
       try {
         await apiJson(`/api/kosongkan/${encodeURIComponent(store)}`, { method: "POST" });
         state.rows = [];
@@ -493,7 +541,10 @@
     async function syncRows() {
       const store = $("store").value;
       if (!state.rows.length) return toast("Belum ada data untuk dikirim.", "error");
-      if (!confirm(`Kirim seluruh data tim cabang ${store} ke Google Sheet?`)) return;
+      if (!confirm(`Kirim seluruh data tim (gabungan) cabang ${store} ke Google Sheet?`)) return;
+      
+      logActivity("Klik Tombol KIRIM KE SHEET"); // Catat log
+      
       $("syncBtn").disabled = true;
       try {
         const data = await apiJson(`/api/sync/${encodeURIComponent(store)}`, { method: "POST" });
@@ -508,7 +559,14 @@
 
     function downloadSo() {
       const store = $("store").value;
-      window.location.href = `${BACKEND_URL}/download/${encodeURIComponent(store)}`;
+      const petugas = $("petugas").value.trim();
+      
+      if (!petugas) return toast("Isi nama petugas dulu untuk mendownload file khusus Anda.", "error");
+      
+      logActivity("Klik Tombol DOWNLOAD SO (Per Orang)"); // Catat log
+      
+      // Tambahkan parameter petugas untuk filter data
+      window.location.href = `${BACKEND_URL}/download/${encodeURIComponent(store)}?petugas=${encodeURIComponent(petugas)}`;
     }
 
     async function startScanner() {
@@ -567,7 +625,6 @@
       return Number(value || 0).toLocaleString("id-ID", { maximumFractionDigits: 2 });
     }
 
-    // MEMBUAT TABEL LANGSUNG UPDATE SAAT NAMA PETUGAS DIKETIK
     $("petugas").addEventListener("input", () => {
       saveSettings();
       renderTable();
