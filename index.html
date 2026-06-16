@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opname IPOS 5</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --primary: #165dff;
+      --primary-dark: #0d47c7;
+      --success: #15803d;
+      --danger: #b42318;
+      --warn: #b76e00;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .shell {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .status {
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    h2 {
+      font-size: 15px;
+      margin: 0 0 12px;
+    }
+
+    label {
+      display: block;
+      margin: 11px 0 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #344054;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 43px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.12);
+    }
+
+    button {
+      min-height: 43px;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      background: var(--primary);
+      font-size: 14px;
+    }
+
+    button:hover { background: var(--primary-dark); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .btn-full { width: 100%; margin-top: 10px; }
+    .btn-soft { background: #eef4ff; color: var(--primary); border: 1px solid #c7d7fe; }
+    .btn-soft:hover { background: #dfeaff; }
+    .btn-success { background: var(--success); }
+    .btn-success:hover { background: #106330; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: #8d1d15; }
+    .btn-warn { background: var(--warn); }
+    .btn-warn:hover { background: #8f5600; }
+
+    #reader {
+      display: none;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-top: 10px;
+      background: #101828;
+    }
+
+    .result {
+      min-height: 66px;
+      margin-top: 12px;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .result strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 15px;
+    }
+
+    .result span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .table-wrap {
+      max-height: 62vh;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #fff;
+    }
+
+    th, td {
+      padding: 9px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #eef2f7;
+      font-size: 12px;
+    }
+
+    .qty {
+      width: 76px;
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .empty {
+      padding: 22px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .pill {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      background: #172033;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+      display: none;
+      z-index: 10;
+    }
+
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: 1fr; }
+      header { align-items: flex-start; flex-direction: column; }
+      .status { white-space: normal; }
+      .toolbar { grid-template-columns: 1fr; }
+      .table-wrap { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>Opname IPOS 5</h1>
+      </div>
+      <div class="status" id="connectionStatus">Memeriksa server...</div>
+    </header>
+
+    <div class="grid">
+      <section>
+        <h2>Input Scan</h2>
+
+        <label for="petugas">Petugas</label>
+        <input id="petugas" autocomplete="name" placeholder="Nama petugas">
+
+        <label for="store">Cabang / Gudang</label>
+        <select id="store">
+          <option value="UTM">UTM - Pusat</option>
+          <option value="GDB">GDB - Pusat</option>
+          <option value="PSSMD">PSSMD - Cabang</option>
+          <option value="TAMPOS">TAMPOS - Cabang</option>
+          <option value="SITUR">SITUR - Cabang</option>
+        </select>
+
+        <div class="btn-row">
+          <button id="scanBtn" type="button">Scan Kamera</button>
+          <button id="stopBtn" class="btn-soft" type="button" disabled>Tutup Kamera</button>
+        </div>
+        <div id="reader"></div>
+
+        <label for="barcode">Barcode / Kode Item</label>
+        <input id="barcode" inputmode="numeric" autocomplete="off" placeholder="Scan atau ketik barcode">
+        <button id="findBtn" class="btn-full btn-soft" type="button">Cari Barang</button>
+
+        <div class="result" id="itemResult">
+          <strong>Belum ada barang dipilih</strong>
+          <span>Scan barcode atau masukkan kode item manual.</span>
+        </div>
+
+        <label for="qty">Qty Fisik</label>
+        <input id="qty" type="number" inputmode="decimal" step="0.01" placeholder="0">
+        <button id="saveBtn" class="btn-full btn-success" type="button">Simpan Scan</button>
+      </section>
+
+      <section>
+        <h2>Daftar Scan</h2>
+        <div class="toolbar">
+          <button id="syncBtn" class="btn-success" type="button">Kirim ke Sheet</button>
+          <button id="downloadBtn" type="button">Download SO</button>
+          <button id="clearBtn" class="btn-danger" type="button">Kosongkan</button>
+        </div>
+        <div class="table-wrap" id="tableWrap">
+          <div class="empty">Belum ada data scan.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // =========================================================================
+    // KONFIGURASI BACKEND (CLOUDFLARE TUNNEL)
+    // Ubah URL di bawah ini dengan URL Tunnel Anda yang mengarah ke localhost:5000
+    // =========================================================================
+    const BACKEND_URL = "https://api-opname.anntech.my.id";
+
+    const $ = (id) => document.getElementById(id);
+    const state = {
+      currentItem: null,
+      scanner: null,
+      scanning: false,
+      rows: []
+    };
+
+    const savedPetugas = localStorage.getItem("opname_petugas");
+    const savedStore = localStorage.getItem("opname_store");
+    if (savedPetugas) $("petugas").value = savedPetugas;
+    if (savedStore) $("store").value = savedStore;
+
+    function toast(message, type = "normal") {
+      const el = $("toast");
+      el.textContent = message;
+      el.style.background = type === "error" ? "#b42318" : type === "success" ? "#15803d" : "#172033";
+      el.style.display = "block";
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => { el.style.display = "none"; }, 3200);
+    }
+
+    function saveSettings() {
+      localStorage.setItem("opname_petugas", $("petugas").value.trim());
+      localStorage.setItem("opname_store", $("store").value);
+    }
+
+    // Pembaruan Fungsi API agar menyambung ke BACKEND_URL
+    async function apiJson(endpoint, options = {}) {
+      const fullUrl = BACKEND_URL + endpoint;
+      const res = await fetch(fullUrl, options);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.status === "error") {
+        throw new Error(data.pesan || "Request gagal.");
+      }
+      return data;
+    }
+
+    async function checkServer() {
+      try {
+        await apiJson("/api/config");
+        $("connectionStatus").textContent = "Server terhubung (" + BACKEND_URL.replace('https://', '') + ")";
+      } catch (err) {
+        $("connectionStatus").textContent = "Server belum tersambung";
+      }
+    }
+
+    function renderItem(item) {
+      state.currentItem = item;
+      // Menghilangkan tampilan Inventory dan HPP di kotak hasil pencarian
+      $("itemResult").innerHTML = `
+        <strong>${escapeHtml(item.nama_barang)}</strong>
+        <span>Kode item: ${escapeHtml(item.kodeitem)}</span>
+      `;
+      $("qty").focus();
+    }
+
+    function resetItem(message = "Siap scan berikutnya.") {
+      state.currentItem = null;
+      $("barcode").value = "";
+      $("qty").value = "";
+      $("itemResult").innerHTML = `<strong>${message}</strong><span>Scan barcode atau masukkan kode item manual.</span>`;
+      $("barcode").focus();
+    }
+
+    async function findItem(barcodeValue) {
+      saveSettings();
+      const store = $("store").value;
+      const barcode = String(barcodeValue || $("barcode").value).trim();
+      if (!$("petugas").value.trim()) return toast("Isi nama petugas dulu.", "error");
+      if (!barcode) return toast("Barcode masih kosong.", "error");
+
+      $("itemResult").innerHTML = "<strong>Mencari barang...</strong><span>Mohon tunggu.</span>";
+      try {
+        const data = await apiJson(`/api/cek_barang?store=${encodeURIComponent(store)}&barcode=${encodeURIComponent(barcode)}`);
+        renderItem(data);
+      } catch (err) {
+        state.currentItem = null;
+        $("itemResult").innerHTML = `<strong>Barang tidak ditemukan</strong><span>${escapeHtml(err.message)}</span>`;
+        $("barcode").select();
+      }
+    }
+
+    async function saveScan() {
+      saveSettings();
+      if (!state.currentItem) return toast("Cari barang dulu.", "error");
+      const qty = Number($("qty").value);
+      if (!qty || qty <= 0) return toast("Isi qty fisik yang benar.", "error");
+
+      const payload = {
+        petugas: $("petugas").value.trim(),
+        cabang: $("store").value,
+        barcode: $("barcode").value.trim() || state.currentItem.kodeitem,
+        kode_item: state.currentItem.kodeitem,
+        nama_barang: state.currentItem.nama_barang,
+        qty_fisik: qty,
+        qty_inventory: Number(state.currentItem.stok_sistem || 0),
+        hpp_satuan: Number(state.currentItem.hpp_satuan || 0)
+      };
+
+      try {
+        const data = await apiJson("/api/simpan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        state.rows = data.data || [];
+        renderTable();
+        resetItem("Data tersimpan.");
+        toast("Scan tersimpan.", "success");
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
+
+    async function loadRows() {
+      try {
+        const data = await apiJson(`/api/list/${encodeURIComponent($("store").value)}`);
+        state.rows = data.data || [];
+        renderTable();
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
+
+    function renderTable() {
+      if (!state.rows.length) {
+        $("tableWrap").innerHTML = '<div class="empty">Belum ada data scan.</div>';
+        return;
+      }
+
+      // Menghilangkan kolom Inv, Selisih, dan Rp agar stok sistem benar-benar rahasia
+      const html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Barang</th>
+              <th>Barcode</th>
+              <th class="qty">Fisik</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${state.rows.map(row => `
+              <tr>
+                <td>
+                  <strong>${escapeHtml(row.nama_barang)}</strong>
+                  <span class="pill">${escapeHtml(row.kode_item)} / ${escapeHtml(row.kode_gudang)}</span>
+                </td>
+                <td>${escapeHtml(row.barcode)}</td>
+                <td class="qty">${formatNumber(row.qty_fisik)}</td>
+                <td><button class="btn-danger" type="button" onclick="deleteRow(${row.id})">Hapus</button></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+      $("tableWrap").innerHTML = html;
+    }
+
+    async function deleteRow(id) {
+      if (!confirm("Hapus item ini?")) return;
+      try {
+        await apiJson(`/api/hapus/${id}`, { method: "POST" });
+        await loadRows();
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
+
+    async function clearRows() {
+      const store = $("store").value;
+      if (!confirm(`Kosongkan semua data scan ${store}?`)) return;
+      try {
+        await apiJson(`/api/kosongkan/${encodeURIComponent(store)}`, { method: "POST" });
+        state.rows = [];
+        renderTable();
+        toast("Data dikosongkan.", "success");
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
+
+    async function syncRows() {
+      const store = $("store").value;
+      if (!state.rows.length) return toast("Belum ada data untuk dikirim.", "error");
+      if (!confirm(`Kirim ${state.rows.length} item ${store} ke Google Sheet?`)) return;
+      $("syncBtn").disabled = true;
+      try {
+        const data = await apiJson(`/api/sync/${encodeURIComponent(store)}`, { method: "POST" });
+        toast(data.pesan || "Data terkirim ke Google Sheet.", "success");
+        await loadRows();
+      } catch (err) {
+        toast(err.message, "error");
+      } finally {
+        $("syncBtn").disabled = false;
+      }
+    }
+
+    // Pembaruan URL Download untuk mengarah ke BACKEND
+    function downloadSo() {
+      const store = $("store").value;
+      window.location.href = `${BACKEND_URL}/download/${encodeURIComponent(store)}`;
+    }
+
+    async function startScanner() {
+      if (state.scanning) return;
+      saveSettings();
+      if (!$("petugas").value.trim()) return toast("Isi nama petugas dulu.", "error");
+
+      $("reader").style.display = "block";
+      $("scanBtn").disabled = true;
+      $("stopBtn").disabled = false;
+
+      try {
+        state.scanner = new Html5Qrcode("reader");
+        await state.scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 160 } },
+          async (decodedText) => {
+            await stopScanner();
+            $("barcode").value = decodedText;
+            findItem(decodedText);
+          }
+        );
+        state.scanning = true;
+      } catch (err) {
+        await stopScanner();
+        toast("Kamera gagal dibuka. Pastikan izin kamera aktif dan akses via HTTPS.", "error");
+      }
+    }
+
+    async function stopScanner() {
+      if (state.scanner) {
+        try {
+          await state.scanner.stop();
+        } catch (err) {}
+        try {
+          state.scanner.clear();
+        } catch (err) {}
+      }
+      state.scanner = null;
+      state.scanning = false;
+      $("reader").style.display = "none";
+      $("scanBtn").disabled = false;
+      $("stopBtn").disabled = true;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString("id-ID", { maximumFractionDigits: 2 });
+    }
+
+    $("petugas").addEventListener("change", saveSettings);
+    $("store").addEventListener("change", () => { saveSettings(); loadRows(); resetItem("Cabang diganti."); });
+    $("findBtn").addEventListener("click", () => findItem());
+    $("saveBtn").addEventListener("click", saveScan);
+    $("scanBtn").addEventListener("click", startScanner);
+    $("stopBtn").addEventListener("click", stopScanner);
+    $("syncBtn").addEventListener("click", syncRows);
+    $("downloadBtn").addEventListener("click", downloadSo);
+    $("clearBtn").addEventListener("click", clearRows);
+    $("barcode").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        findItem();
+      }
+    });
+    $("qty").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveScan();
+      }
+    });
+
+    checkServer();
+    loadRows();
+  </script>
+</body>
+</html>
