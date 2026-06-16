@@ -33,7 +33,6 @@
       padding: 14px;
     }
 
-    /* --- GAYA BARU UNTUK HEADER DAN LOGO --- */
     header {
       display: flex;
       justify-content: space-between;
@@ -49,7 +48,7 @@
     }
 
     .logo {
-      height: 46px; /* Menyesuaikan ukuran logo */
+      height: 46px;
       width: auto;
       border-radius: 6px;
       object-fit: contain;
@@ -67,7 +66,6 @@
       font-size: 11px;
       color: var(--muted);
     }
-    /* --------------------------------------- */
 
     .status {
       padding: 7px 10px;
@@ -357,7 +355,23 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const BACKEND_URL = "";
+    // ==========================================
+    // PETA (ROUTING) CLOUDFLARE TUNNEL TIAP CABANG
+    // ==========================================
+    const TUNNEL_MAP = {
+      "UTM": "https://api-utm.anntech.my.id",
+      "GDB": "https://api-utm.anntech.my.id", // Asumsi GDB pakai server Pusat/UTM
+      "PSSMD": "https://api-pssmd.anntech.my.id",
+      "TAMPOS": "https://api-tampomas.anntech.my.id",
+      "SITUR": "https://api-situraja.anntech.my.id"
+    };
+
+    // Fungsi otomatis mendapatkan URL PC Server berdasarkan Cabang yang dipilih
+    function getBackendUrl() {
+      const store = document.getElementById("store").value;
+      return TUNNEL_MAP[store] || "";
+    }
+    // ==========================================
 
     const $ = (id) => document.getElementById(id);
     const state = {
@@ -386,8 +400,12 @@
       localStorage.setItem("opname_store", $("store").value);
     }
 
+    // SEMUA PEMANGGILAN API SEKARANG OTOMATIS MENYESUAIKAN DENGAN URL CABANG
     async function apiJson(endpoint, options = {}) {
-      const fullUrl = BACKEND_URL + endpoint;
+      const baseUrl = getBackendUrl();
+      if (!baseUrl) throw new Error("URL Server cabang ini belum dikonfigurasi.");
+      
+      const fullUrl = baseUrl + endpoint;
       const res = await fetch(fullUrl, options);
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.status === "error") {
@@ -403,7 +421,7 @@
         aksi: aksi
       };
       try {
-        await fetch(BACKEND_URL + "/api/log_action", {
+        await fetch(getBackendUrl() + "/api/log_action", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -416,9 +434,11 @@
     async function checkServer() {
       try {
         await apiJson("/api/config");
-        $("connectionStatus").textContent = "Server terhubung";
+        $("connectionStatus").textContent = "Terhubung: " + $("store").value;
+        $("connectionStatus").style.color = "var(--success)";
       } catch (err) {
-        $("connectionStatus").textContent = "Server belum tersambung";
+        $("connectionStatus").textContent = "Koneksi " + $("store").value + " Terputus";
+        $("connectionStatus").style.color = "var(--danger)";
       }
     }
 
@@ -590,11 +610,13 @@
     function downloadSo() {
       const store = $("store").value;
       const petugas = $("petugas").value.trim();
+      const baseUrl = getBackendUrl();
       
+      if (!baseUrl) return toast("Sistem gagal mengalihkan download.", "error");
       if (!petugas) return toast("Isi nama petugas dulu untuk mendownload file khusus Anda.", "error");
       
       logActivity("Klik Tombol DOWNLOAD SO (Per Orang)"); 
-      window.location.href = `${BACKEND_URL}/download/${encodeURIComponent(store)}?petugas=${encodeURIComponent(petugas)}`;
+      window.location.href = `${baseUrl}/download/${encodeURIComponent(store)}?petugas=${encodeURIComponent(petugas)}`;
     }
 
     async function startScanner() {
@@ -658,7 +680,14 @@
       renderTable();
     });
     
-    $("store").addEventListener("change", () => { saveSettings(); loadRows(); resetItem("Cabang diganti."); });
+    // KETIKA CABANG DIUBAH, SISTEM CEK KONEKSI LAGI KE PC CABANG TERSEBUT
+    $("store").addEventListener("change", () => { 
+      saveSettings(); 
+      checkServer();
+      loadRows(); 
+      resetItem("Cabang diganti."); 
+    });
+
     $("findBtn").addEventListener("click", () => findItem());
     $("saveBtn").addEventListener("click", saveScan);
     $("scanBtn").addEventListener("click", startScanner);
