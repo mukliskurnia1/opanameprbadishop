@@ -254,7 +254,7 @@
         <h2>Input Scan</h2>
 
         <label for="petugas">Petugas</label>
-        <input id="petugas" autocomplete="name" placeholder="Nama petugas">
+        <input id="petugas" autocomplete="name" placeholder="Nama petugas (harus sama agar tabel muncul)">
 
         <label for="store">Cabang / Gudang</label>
         <select id="store">
@@ -302,10 +302,7 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // =========================================================================
-    // KONFIGURASI BACKEND (CLOUDFLARE TUNNEL)
-    // Ubah URL di bawah ini dengan URL Tunnel Anda yang mengarah ke localhost:5000
-    // =========================================================================
+    // Kosongkan URL karena Tunnel dan Frontend sudah 1 domain yang sama
     const BACKEND_URL = "https://opnamepribadishop.anntech.my.id";
 
     const $ = (id) => document.getElementById(id);
@@ -335,7 +332,6 @@
       localStorage.setItem("opname_store", $("store").value);
     }
 
-    // Pembaruan Fungsi API agar menyambung ke BACKEND_URL
     async function apiJson(endpoint, options = {}) {
       const fullUrl = BACKEND_URL + endpoint;
       const res = await fetch(fullUrl, options);
@@ -349,7 +345,7 @@
     async function checkServer() {
       try {
         await apiJson("/api/config");
-        $("connectionStatus").textContent = "Server terhubung (" + BACKEND_URL.replace('https://', '') + ")";
+        $("connectionStatus").textContent = "Server terhubung";
       } catch (err) {
         $("connectionStatus").textContent = "Server belum tersambung";
       }
@@ -357,7 +353,6 @@
 
     function renderItem(item) {
       state.currentItem = item;
-      // Menghilangkan tampilan Inventory dan HPP di kotak hasil pencarian
       $("itemResult").innerHTML = `
         <strong>${escapeHtml(item.nama_barang)}</strong>
         <span>Kode item: ${escapeHtml(item.kodeitem)}</span>
@@ -434,12 +429,16 @@
     }
 
     function renderTable() {
-      if (!state.rows.length) {
-        $("tableWrap").innerHTML = '<div class="empty">Belum ada data scan.</div>';
+      // FITUR BARU: Menyaring (Filter) Tabel Berdasarkan Nama Petugas
+      const currentPetugas = $("petugas").value.trim().toLowerCase();
+      
+      const myRows = state.rows.filter(row => row.petugas.toLowerCase() === currentPetugas);
+
+      if (!myRows.length) {
+        $("tableWrap").innerHTML = '<div class="empty">Belum ada data scan milik Anda di cabang ini.</div>';
         return;
       }
 
-      // Menghilangkan kolom Inv, Selisih, dan Rp agar stok sistem benar-benar rahasia
       const html = `
         <table>
           <thead>
@@ -451,7 +450,7 @@
             </tr>
           </thead>
           <tbody>
-            ${state.rows.map(row => `
+            ${myRows.map(row => `
               <tr>
                 <td>
                   <strong>${escapeHtml(row.nama_barang)}</strong>
@@ -480,12 +479,12 @@
 
     async function clearRows() {
       const store = $("store").value;
-      if (!confirm(`Kosongkan semua data scan ${store}?`)) return;
+      if (!confirm(`HATI-HATI! Yakin ingin mengosongkan SEMUA data scan cabang ${store}?`)) return;
       try {
         await apiJson(`/api/kosongkan/${encodeURIComponent(store)}`, { method: "POST" });
         state.rows = [];
         renderTable();
-        toast("Data dikosongkan.", "success");
+        toast("Semua data dikosongkan.", "success");
       } catch (err) {
         toast(err.message, "error");
       }
@@ -494,7 +493,7 @@
     async function syncRows() {
       const store = $("store").value;
       if (!state.rows.length) return toast("Belum ada data untuk dikirim.", "error");
-      if (!confirm(`Kirim ${state.rows.length} item ${store} ke Google Sheet?`)) return;
+      if (!confirm(`Kirim seluruh data tim cabang ${store} ke Google Sheet?`)) return;
       $("syncBtn").disabled = true;
       try {
         const data = await apiJson(`/api/sync/${encodeURIComponent(store)}`, { method: "POST" });
@@ -507,7 +506,6 @@
       }
     }
 
-    // Pembaruan URL Download untuk mengarah ke BACKEND
     function downloadSo() {
       const store = $("store").value;
       window.location.href = `${BACKEND_URL}/download/${encodeURIComponent(store)}`;
@@ -569,7 +567,12 @@
       return Number(value || 0).toLocaleString("id-ID", { maximumFractionDigits: 2 });
     }
 
-    $("petugas").addEventListener("change", saveSettings);
+    // MEMBUAT TABEL LANGSUNG UPDATE SAAT NAMA PETUGAS DIKETIK
+    $("petugas").addEventListener("input", () => {
+      saveSettings();
+      renderTable();
+    });
+    
     $("store").addEventListener("change", () => { saveSettings(); loadRows(); resetItem("Cabang diganti."); });
     $("findBtn").addEventListener("click", () => findItem());
     $("saveBtn").addEventListener("click", saveScan);
