@@ -111,10 +111,11 @@
       color: #fff;
       background: var(--primary);
       font-size: 14px;
+      transition: all 0.2s;
     }
 
     button:hover { background: var(--primary-dark); }
-    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
     .btn-full { width: 100%; margin-top: 10px; }
     .btn-soft { background: #eef4ff; color: var(--primary); border: 1px solid #c7d7fe; }
@@ -123,8 +124,6 @@
     .btn-success:hover { background: #106330; }
     .btn-danger { background: var(--danger); }
     .btn-danger:hover { background: #8d1d15; }
-    .btn-warn { background: var(--warn); }
-    .btn-warn:hover { background: #8f5600; }
 
     #reader {
       display: none;
@@ -157,7 +156,6 @@
       line-height: 1.35;
     }
 
-    /* GAYA BARU UNTUK PANEL AKSI & KETERANGAN */
     .action-panel {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -371,7 +369,6 @@
       return data;
     }
 
-    // FUNGSI PENCATATAN LOG AKTIVITAS (DIAM-DIAM)
     async function logActivity(aksi) {
       const payload = {
         petugas: $("petugas").value.trim() || "Anonim",
@@ -526,7 +523,7 @@
       const store = $("store").value;
       if (!confirm(`HATI-HATI! Yakin ingin mengosongkan SEMUA data scan tim untuk cabang ${store}?`)) return;
       
-      logActivity("Klik Tombol KOSONGKAN"); // Catat log
+      logActivity("Klik Tombol KOSONGKAN"); 
       
       try {
         await apiJson(`/api/kosongkan/${encodeURIComponent(store)}`, { method: "POST" });
@@ -543,9 +540,15 @@
       if (!state.rows.length) return toast("Belum ada data untuk dikirim.", "error");
       if (!confirm(`Kirim seluruh data tim (gabungan) cabang ${store} ke Google Sheet?`)) return;
       
-      logActivity("Klik Tombol KIRIM KE SHEET"); // Catat log
+      logActivity("Klik Tombol KIRIM KE SHEET");
       
-      $("syncBtn").disabled = true;
+      const btn = $("syncBtn");
+      const originalText = btn.textContent;
+      
+      // MENGUBAH TOMBOL JADI ANIMASI LOADING
+      btn.disabled = true;
+      btn.textContent = "⏳ Mengirim... Mohon Tunggu";
+      
       try {
         const data = await apiJson(`/api/sync/${encodeURIComponent(store)}`, { method: "POST" });
         toast(data.pesan || "Data terkirim ke Google Sheet.", "success");
@@ -553,7 +556,9 @@
       } catch (err) {
         toast(err.message, "error");
       } finally {
-        $("syncBtn").disabled = false;
+        // MENGEMBALIKAN TOMBOL KE SEMULA
+        btn.disabled = false;
+        btn.textContent = originalText;
       }
     }
 
@@ -563,9 +568,7 @@
       
       if (!petugas) return toast("Isi nama petugas dulu untuk mendownload file khusus Anda.", "error");
       
-      logActivity("Klik Tombol DOWNLOAD SO (Per Orang)"); // Catat log
-      
-      // Tambahkan parameter petugas untuk filter data
+      logActivity("Klik Tombol DOWNLOAD SO (Per Orang)"); 
       window.location.href = `${BACKEND_URL}/download/${encodeURIComponent(store)}?petugas=${encodeURIComponent(petugas)}`;
     }
 
