@@ -17,6 +17,7 @@
       --success: #15803d;
       --danger: #b42318;
       --warn: #b76e00;
+      --warn-dark: #8a5300;
     }
 
     * { box-sizing: border-box; }
@@ -144,6 +145,8 @@
     .btn-success:hover { background: #106330; }
     .btn-danger { background: var(--danger); }
     .btn-danger:hover { background: #8d1d15; }
+    .btn-warn { background: var(--warn); }
+    .btn-warn:hover { background: var(--warn-dark); }
 
     #reader {
       display: none;
@@ -178,7 +181,7 @@
 
     .action-panel {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
       margin-bottom: 15px;
     }
@@ -188,11 +191,16 @@
       padding: 8px;
       border-radius: 8px;
       border: 1px solid #eaecf0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .action-item button {
       width: 100%;
       margin-top: 0;
       margin-bottom: 6px;
+      font-size: 13px;
+      padding: 8px;
     }
     .action-item small {
       display: block;
@@ -272,7 +280,7 @@
       .grid { grid-template-columns: 1fr; }
       header { align-items: flex-start; flex-direction: column; }
       .status { white-space: normal; }
-      .action-panel { grid-template-columns: 1fr; }
+      .action-panel { grid-template-columns: repeat(2, 1fr); }
       .table-wrap { max-height: none; }
     }
   </style>
@@ -332,16 +340,20 @@
         
         <div class="action-panel">
           <div class="action-item">
-            <button id="syncBtn" class="btn-success" type="button">Kirim ke Sheet</button>
-            <small>Kirim data gabungan <b>jika semua orang</b> sudah beres hitung.</small>
+            <button id="syncBtn" class="btn-success" type="button">Kirim Sheet</button>
+            <small>Kirim data gabungan (Parsial).</small>
           </div>
           <div class="action-item">
-            <button id="downloadBtn" type="button">Download SO</button>
-            <small>Download <b>per orang</b> (hanya data hitung milik Anda).</small>
+            <button id="downloadBtn" type="button">SO Parsial</button>
+            <small>Area Anda saja (Sesuai Scan).</small>
+          </div>
+          <div class="action-item">
+            <button id="downloadGlobalBtn" class="btn-warn" type="button">SO Global</button>
+            <small>Tarik seluruh Master Data IPOS (Sisa = 0).</small>
           </div>
           <div class="action-item">
             <button id="clearBtn" class="btn-danger" type="button">Kosongkan</button>
-            <small>Kosongkan <b>semua data gabungan</b> tim di cabang ini.</small>
+            <small>Hapus data cabang ini.</small>
           </div>
         </div>
 
@@ -360,13 +372,12 @@
     // ==========================================
     const TUNNEL_MAP = {
       "UTM": "https://api-utm.anntech.my.id",
-      "GDB": "https://api-utm.anntech.my.id", // Asumsi GDB pakai server Pusat/UTM
+      "GDB": "https://api-utm.anntech.my.id",
       "PSSMD": "https://api-pssmd.anntech.my.id",
       "TAMPOS": "https://api-tampomas.anntech.my.id",
       "SITUR": "https://api-situraja.anntech.my.id"
     };
 
-    // Fungsi otomatis mendapatkan URL PC Server berdasarkan Cabang yang dipilih
     function getBackendUrl() {
       const store = document.getElementById("store").value;
       return TUNNEL_MAP[store] || "";
@@ -400,7 +411,6 @@
       localStorage.setItem("opname_store", $("store").value);
     }
 
-    // SEMUA PEMANGGILAN API SEKARANG OTOMATIS MENYESUAIKAN DENGAN URL CABANG
     async function apiJson(endpoint, options = {}) {
       const baseUrl = getBackendUrl();
       if (!baseUrl) throw new Error("URL Server cabang ini belum dikonfigurasi.");
@@ -547,7 +557,7 @@
                 </td>
                 <td>${escapeHtml(row.barcode)}</td>
                 <td class="qty">${formatNumber(row.qty_fisik)}</td>
-                <td><button class="btn-danger" type="button" onclick="deleteRow(${row.id})">Hapus</button></td>
+                <td><button class="btn-danger" type="button" style="padding:6px 10px;" onclick="deleteRow(${row.id})">Del</button></td>
               </tr>
             `).join("")}
           </tbody>
@@ -593,7 +603,7 @@
       const originalText = btn.textContent;
       
       btn.disabled = true;
-      btn.textContent = "⏳ Mengirim... Mohon Tunggu";
+      btn.textContent = "⏳ Mengirim...";
       
       try {
         const data = await apiJson(`/api/sync/${encodeURIComponent(store)}`, { method: "POST" });
@@ -607,7 +617,7 @@
       }
     }
 
-    function downloadSo() {
+    async function executeDownload(mode) {
       const store = $("store").value;
       const petugas = $("petugas").value.trim();
       const baseUrl = getBackendUrl();
@@ -615,9 +625,68 @@
       if (!baseUrl) return toast("Sistem gagal mengalihkan download.", "error");
       if (!petugas) return toast("Isi nama petugas dulu untuk mendownload file khusus Anda.", "error");
       
-      logActivity("Klik Tombol DOWNLOAD SO (Per Orang)"); 
-      window.location.href = `${baseUrl}/download/${encodeURIComponent(store)}?petugas=${encodeURIComponent(petugas)}`;
+      logActivity(`Klik Tombol DOWNLOAD SO (${mode.toUpperCase()})`); 
+      
+      // Deteksi tombol mana yang diklik agar animasinya tepat sasaran
+      const btn = mode === "global" ? $("downloadGlobalBtn") : $("downloadBtn");
+      const originalText = btn.textContent;
+      
+      // Kunci tombol dan ubah teks jadi animasi loading
+      btn.disabled = true;
+      btn.textContent = "⏳ Memproses...";
+
+      try {
+        const url = `${baseUrl}/download/${encodeURIComponent(store)}?mode=${mode}&petugas=${encodeURIComponent(petugas)}`;
+        
+        // Meminta file ke Python dan menunggunya selesai menggunakan fetch
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(errText || "Gagal mengunduh file SO.");
+        }
+
+        // Mengambil nama file asli dari server, atau pakai nama cadangan
+        let filename = `format_so_${store}_${mode}_${petugas}.xlsx`;
+        const disposition = response.headers.get('content-disposition');
+        if (disposition && disposition.includes('filename=')) {
+            filename = disposition.split('filename=')[1].replace(/["']/g, "");
+        }
+
+        // Mengubah data yang diterima menjadi blob dan mendownloadnya
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Membersihkan url sementara setelah file terdownload
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+        
+        toast(`File SO ${mode.toUpperCase()} berhasil diunduh.`, "success");
+      } catch (err) {
+        toast("Download gagal: " + err.message, "error");
+      } finally {
+        // Kembalikan tombol ke warna dan tulisan aslinya
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
     }
+
+    $("downloadBtn").addEventListener("click", () => executeDownload("partial"));
+
+    $("downloadGlobalBtn").addEventListener("click", () => {
+      const confirmGlobal = confirm(
+        "PENTING: Anda akan melakukan DOWNLOAD SO GLOBAL (Sapu Jagat).\n\n" +
+        "Sistem akan menarik seluruh Master Item dari IPOS dan mengubah stok barang yang TIDAK DI-SCAN menjadi 0.\n" +
+        "Proses ini mungkin membutuhkan waktu beberapa detik.\n\n" +
+        "Lanjutkan?"
+      );
+      if (confirmGlobal) executeDownload("global");
+    });
 
     async function startScanner() {
       if (state.scanning) return;
@@ -680,7 +749,6 @@
       renderTable();
     });
     
-    // KETIKA CABANG DIUBAH, SISTEM CEK KONEKSI LAGI KE PC CABANG TERSEBUT
     $("store").addEventListener("change", () => { 
       saveSettings(); 
       checkServer();
@@ -693,8 +761,8 @@
     $("scanBtn").addEventListener("click", startScanner);
     $("stopBtn").addEventListener("click", stopScanner);
     $("syncBtn").addEventListener("click", syncRows);
-    $("downloadBtn").addEventListener("click", downloadSo);
     $("clearBtn").addEventListener("click", clearRows);
+    
     $("barcode").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
