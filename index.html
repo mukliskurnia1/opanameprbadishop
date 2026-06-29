@@ -1,870 +1,879 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pribadishop Opname Tools</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <style>
-    :root {
-      --bg: #f5f7fb;
-      --panel: #ffffff;
-      --text: #172033;
-      --muted: #667085;
-      --line: #d9e0ea;
-      --primary: #165dff;
-      --primary-dark: #0d47c7;
-      --success: #15803d;
-      --danger: #b42318;
-      --warn: #b76e00;
-      --warn-dark: #8a5300;
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pribadishop Opname Tools</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --primary: #165dff;
+      --primary-dark: #0d47c7;
+      --success: #15803d;
+      --danger: #b42318;
+      --warn: #b76e00;
+      --warn-dark: #8a5300;
+    }
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
 
-    .shell {
-      width: min(980px, 100%);
-      margin: 0 auto;
-      padding: 14px;
-    }
+    .shell {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 14px;
+    }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0 14px;
-    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0 14px;
+    }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-    .logo {
-      height: 46px;
-      width: auto;
-      border-radius: 6px;
-      object-fit: contain;
-    }
+    .logo {
+      height: 46px;
+      width: auto;
+      border-radius: 6px;
+      object-fit: contain;
+    }
 
-    .header-text h1 {
-      margin: 0;
-      font-size: 20px;
-      line-height: 1.1;
-      color: var(--text);
-    }
+    .header-text h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.1;
+      color: var(--text);
+    }
 
-    .subtitle {
-      margin: 4px 0 0 0;
-      font-size: 11px;
-      color: var(--muted);
-    }
+    .subtitle {
+      margin: 4px 0 0 0;
+      font-size: 11px;
+      color: var(--muted);
+    }
 
-    .status {
-      padding: 7px 10px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      color: var(--muted);
-      font-size: 12px;
-      white-space: nowrap;
-    }
+    .status {
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 14px;
-      align-items: start;
-    }
+    .grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
 
-    section {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
 
-    h2 {
-      font-size: 15px;
-      margin: 0 0 12px;
-    }
+    h2 {
+      font-size: 15px;
+      margin: 0 0 12px;
+    }
 
-    label {
-      display: block;
-      margin: 11px 0 6px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #344054;
-    }
+    label {
+      display: block;
+      margin: 11px 0 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #344054;
+    }
 
-    .input-wrapper {
-      position: relative;
-    }
+    /* Modifikasi wrapper input agar kotak sugesti posisinya pas */
+    .input-wrapper {
+      position: relative;
+    }
 
-    input, select {
-      width: 100%;
-      min-height: 43px;
-      padding: 10px 11px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--text);
-      font-size: 16px;
-      outline: none;
-    }
+    input, select {
+      width: 100%;
+      min-height: 43px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
 
-    input:focus, select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.12);
-    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.12);
+    }
 
-    .suggestions-box {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      margin-top: 4px;
-      background: #fff;
-      border: 1px solid var(--primary);
-      border-radius: 8px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      z-index: 50;
-      max-height: 220px;
-      overflow-y: auto;
-    }
+    /* Desain Kotak Auto-Suggest */
+    .suggestions-box {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 4px;
+      background: #fff;
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      z-index: 50;
+      max-height: 220px;
+      overflow-y: auto;
+    }
 
-    .suggestion-item {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--line);
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .suggestion-item:last-child { border-bottom: none; }
-    .suggestion-item:hover { background: #f0fdf4; }
-    .suggestion-item strong { display: block; color: var(--text); font-size: 14px; margin-bottom: 2px;}
-    .suggestion-item span { color: var(--muted); }
+    .suggestion-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: #f0fdf4; }
+    .suggestion-item strong { display: block; color: var(--text); font-size: 14px; margin-bottom: 2px;}
+    .suggestion-item span { color: var(--muted); }
 
-    button {
-      min-height: 43px;
-      border: 0;
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-weight: 700;
-      cursor: pointer;
-      color: #fff;
-      background: var(--primary);
-      font-size: 14px;
-      transition: all 0.2s;
-    }
+    button {
+      min-height: 43px;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      background: var(--primary);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
 
-    button:hover { background: var(--primary-dark); }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-    .btn-full { width: 100%; margin-top: 10px; }
-    .btn-soft { background: #eef4ff; color: var(--primary); border: 1px solid #c7d7fe; }
-    .btn-soft:hover { background: #dfeaff; }
-    .btn-success { background: var(--success); }
-    .btn-success:hover { background: #106330; }
-    .btn-danger { background: var(--danger); }
-    .btn-danger:hover { background: #8d1d15; }
-    .btn-warn { background: var(--warn); }
-    .btn-warn:hover { background: var(--warn-dark); }
+    button:hover { background: var(--primary-dark); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .btn-full { width: 100%; margin-top: 10px; }
+    .btn-soft { background: #eef4ff; color: var(--primary); border: 1px solid #c7d7fe; }
+    .btn-soft:hover { background: #dfeaff; }
+    .btn-success { background: var(--success); }
+    .btn-success:hover { background: #106330; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: #8d1d15; }
+    .btn-warn { background: var(--warn); }
+    .btn-warn:hover { background: var(--warn-dark); }
 
-    #reader {
-      display: none;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      margin-top: 10px;
-      background: #101828;
-    }
+    #reader {
+      display: none;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-top: 10px;
+      background: #101828;
+    }
 
-    .result {
-      min-height: 66px;
-      margin-top: 12px;
-      padding: 11px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #f8fafc;
-    }
+    .result {
+      min-height: 66px;
+      margin-top: 12px;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+    }
 
-    .result strong {
-      display: block;
-      margin-bottom: 3px;
-      font-size: 15px;
-    }
+    .result strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 15px;
+    }
 
-    .result span {
-      display: block;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
+    .result span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
 
-    .action-panel {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    .action-item {
-      text-align: center;
-      background: #f9fafb;
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #eaecf0;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .action-item button {
-      width: 100%;
-      margin-top: 0;
-      margin-bottom: 6px;
-      font-size: 13px;
-      padding: 8px;
-    }
-    .action-item small {
-      display: block;
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 1.3;
-    }
+    .action-panel {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .action-item {
+      text-align: center;
+      background: #f9fafb;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #eaecf0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .action-item button {
+      width: 100%;
+      margin-top: 0;
+      margin-bottom: 6px;
+      font-size: 13px;
+      padding: 8px;
+    }
+    .action-item small {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
 
-    .table-wrap {
-      max-height: 62vh;
-      overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-    }
+    .table-wrap {
+      max-height: 62vh;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      background: #fff;
-    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #fff;
+    }
 
-    th, td {
-      padding: 9px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: top;
-    }
+    th, td {
+      padding: 9px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
 
-    th {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      background: #eef2f7;
-      font-size: 12px;
-    }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #eef2f7;
+      font-size: 12px;
+    }
 
-    .qty {
-      width: 76px;
-      text-align: right;
-      font-weight: 700;
-    }
+    .qty {
+      width: 76px;
+      text-align: right;
+      font-weight: 700;
+    }
 
-    .empty {
-      padding: 22px;
-      color: var(--muted);
-      text-align: center;
-    }
+    .empty {
+      padding: 22px;
+      color: var(--muted);
+      text-align: center;
+    }
 
-    .pill {
-      display: inline-block;
-      margin-top: 4px;
-      padding: 3px 7px;
-      border-radius: 999px;
-      background: #eef2f7;
-      color: var(--muted);
-      font-size: 11px;
-    }
+    .pill {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: var(--muted);
+      font-size: 11px;
+    }
 
-    .toast {
-      position: fixed;
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
-      max-width: 620px;
-      margin: 0 auto;
-      padding: 12px 14px;
-      border-radius: 8px;
-      color: #fff;
-      background: #172033;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
-      display: none;
-      z-index: 10;
-    }
+    .toast {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      background: #172033;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+      display: none;
+      z-index: 10;
+    }
 
-    @media (max-width: 760px) {
-      .grid { grid-template-columns: 1fr; }
-      header { align-items: flex-start; flex-direction: column; }
-      .status { white-space: normal; }
-      .action-panel { grid-template-columns: repeat(2, 1fr); }
-      .table-wrap { max-height: none; }
-    }
-  </style>
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: 1fr; }
+      header { align-items: flex-start; flex-direction: column; }
+      .status { white-space: normal; }
+      .action-panel { grid-template-columns: repeat(2, 1fr); }
+      .table-wrap { max-height: none; }
+    }
+  </style>
 </head>
 <body>
-  <div class="shell">
-    
-    <header>
-      <div class="header-left">
-        <img src="https://res.cloudinary.com/dvvjbnjzd/image/upload/v1781251741/logo_Pribadishop_mhpxft.jpg" alt="Logo" class="logo">
-        <div class="header-text">
-          <h1>Pribadishop Opname Tools</h1>
-          <p class="subtitle">Dibuat oleh @muklis by anntech.my.id</p>
-        </div>
-      </div>
-      <div class="status" id="connectionStatus">Memeriksa server...</div>
-    </header>
+  <div class="shell">
+    
+    <header>
+      <div class="header-left">
+        <img src="https://res.cloudinary.com/dvvjbnjzd/image/upload/v1781251741/logo_Pribadishop_mhpxft.jpg" alt="Logo" class="logo">
+        <div class="header-text">
+          <h1>Pribadishop Opname Tools</h1>
+          <p class="subtitle">Dibuat oleh @muklis by anntech.my.id</p>
+        </div>
+      </div>
+      <div class="status" id="connectionStatus">Memeriksa server...</div>
+    </header>
 
-    <div class="grid">
-      <section>
-        <h2>Input Opname Barang</h2>
+    <div class="grid">
+      <section>
+        <h2>Input Scan</h2>
 
-        <label for="petugas">Nama Petugas</label>
-        <input id="petugas" autocomplete="name" placeholder="Ketik nama Anda di sini...">
+        <label for="petugas">Petugas</label>
+        <input id="petugas" autocomplete="name" placeholder="Nama petugas (harus sama agar tabel muncul)">
 
-        <label for="store">Lokasi Gudang / Cabang</label>
-        <select id="store">
-          <option value="UTM">UTM - Pusat</option>
-          <option value="GDB">GDB - Pusat</option>
-          <option value="PSSMD">PSSMD - Cabang</option>
-          <option value="TAMPO">TAMPO - Cabang</option>
-          <option value="SITUR">SITUR - Cabang</option>
-        </select>
+        <label for="store">Cabang / Gudang</label>
+        <select id="store">
+          <option value="UTM">UTM - Pusat</option>
+          <option value="GDB">GDB - Pusat</option>
+          <option value="PSSMD">PSSMD - Cabang</option>
+          <option value="TAMPO">TAMPO - Cabang</option>
+          <option value="SITUR">SITUR - Cabang</option>
+        </select>
 
-        <div class="btn-row">
-          <button id="scanBtn" type="button">📸 Scan Kamera</button>
-          <button id="stopBtn" class="btn-soft" type="button" disabled>Tutup Kamera</button>
-        </div>
-        <div id="reader"></div>
+        <div class="btn-row">
+          <button id="scanBtn" type="button">Scan Kamera</button>
+          <button id="stopBtn" class="btn-soft" type="button" disabled>Tutup Kamera</button>
+        </div>
+        <div id="reader"></div>
 
-        <label for="barcode">Barcode / Kode Item</label>
-        <div class="input-wrapper">
-          <input id="barcode" type="text" autocomplete="off" placeholder="Ketik manual, atau tembak Scanner..." autofocus>
-          <div id="suggestions" class="suggestions-box"></div>
-        </div>
-        
-        <button id="findBtn" class="btn-full btn-soft" type="button">Cari Barang</button>
+        <label for="barcode">Barcode / Nama Barang</label>
+        <div class="input-wrapper">
+          <input id="barcode" type="text" autocomplete="off" placeholder="Scan barcode atau ketik nama barang...">
+          <div id="suggestions" class="suggestions-box"></div>
+        </div>
+        
+        <button id="findBtn" class="btn-full btn-soft" type="button">Cari Barang</button>
 
-        <div class="result" id="itemResult">
-          <strong>Belum ada barang dipilih</strong>
-          <span>Ketik, scan kamera, atau gunakan alat barcode scanner.</span>
-        </div>
+        <div class="result" id="itemResult">
+          <strong>Belum ada barang dipilih</strong>
+          <span>Scan barcode atau masukkan kode item manual.</span>
+        </div>
 
-        <label for="qty">Kuantitas (Qty Fisik)</label>
-        <input id="qty" type="number" inputmode="decimal" step="0.01" placeholder="Masukkan jumlah...">
-        <button id="saveBtn" class="btn-full btn-success" type="button">Simpan Qty</button>
-      </section>
+        <label for="qty">Qty Fisik</label>
+        <input id="qty" type="number" inputmode="decimal" step="0.01" placeholder="0">
+        <button id="saveBtn" class="btn-full btn-success" type="button">Simpan Scan</button>
+      </section>
 
-      <section>
-        <h2>Daftar Scan & Aksi</h2>
-        
-        <div class="action-panel">
-          <div class="action-item">
-            <button id="syncBtn" class="btn-success" type="button">Kirim Sheet</button>
-            <small>Kirim data gabungan (Parsial).</small>
-          </div>
-          <div class="action-item">
-            <button id="downloadBtn" type="button">SO Parsial</button>
-            <small>Area Anda saja (Sesuai Scan).</small>
-          </div>
-          <div class="action-item">
-            <button id="downloadGlobalBtn" class="btn-warn" type="button">SO Global</button>
-            <small>Tarik seluruh Master IPOS.</small>
-          </div>
-          <div class="action-item">
-            <button id="clearBtn" class="btn-danger" type="button">Kosongkan</button>
-            <small>Hapus data cabang ini.</small>
-          </div>
-        </div>
+      <section>
+        <h2>Daftar Scan & Aksi</h2>
+        
+        <div class="action-panel">
+          <div class="action-item">
+            <button id="syncBtn" class="btn-success" type="button">Kirim Sheet</button>
+            <small>Kirim data gabungan (Parsial).</small>
+          </div>
+          <div class="action-item">
+            <button id="downloadBtn" type="button">SO Parsial</button>
+            <small>Area Anda saja (Sesuai Scan).</small>
+          </div>
+          <div class="action-item">
+            <button id="downloadGlobalBtn" class="btn-warn" type="button">SO Global</button>
+            <small>Tarik seluruh Master Data IPOS (Sisa = 0).</small>
+          </div>
+          <div class="action-item">
+            <button id="clearBtn" class="btn-danger" type="button">Kosongkan</button>
+            <small>Hapus data cabang ini.</small>
+          </div>
+        </div>
 
-        <div class="table-wrap" id="tableWrap">
-          <div class="empty">Belum ada data scan.</div>
-        </div>
-      </section>
-    </div>
-  </div>
+        <div class="table-wrap" id="tableWrap">
+          <div class="empty">Belum ada data scan.</div>
+        </div>
+      </section>
+    </div>
+  </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-  <script>
-    // ==========================================
-    // PETA (ROUTING) CLOUDFLARE TUNNEL TIAP CABANG
-    // ==========================================
-    const TUNNEL_MAP = {
-      "UTM": "https://api-utm.anntech.my.id",
-      "GDB": "https://api-utm.anntech.my.id",
-      "PSSMD": "https://api-pssmd.anntech.my.id",
-      "TAMPO": "https://api-tampomas.anntech.my.id",
-      "SITUR": "https://api-situraja.anntech.my.id"
-    };
+  <script>
+    // ==========================================
+    // PETA (ROUTING) CLOUDFLARE TUNNEL TIAP CABANG
+    // ==========================================
+    const TUNNEL_MAP = {
+      "UTM": "https://api-utm.anntech.my.id",
+      "GDB": "https://api-utm.anntech.my.id",
+      "PSSMD": "https://api-pssmd.anntech.my.id",
+      "TAMPO": "https://api-tampomas.anntech.my.id",
+      "SITUR": "https://api-situraja.anntech.my.id"
+    };
 
-    function getBackendUrl() {
-      const store = document.getElementById("store").value;
-      return TUNNEL_MAP[store] || "";
-    }
-    // ==========================================
+    function getBackendUrl() {
+      const store = document.getElementById("store").value;
+      return TUNNEL_MAP[store] || "";
+    }
+    // ==========================================
 
-    const $ = (id) => document.getElementById(id);
-    const state = {
-      currentItem: null,
-      scanner: null,
-      scanning: false,
-      rows: []
-    };
+    const $ = (id) => document.getElementById(id);
+    const state = {
+      currentItem: null,
+      scanner: null,
+      scanning: false,
+      rows: []
+    };
 
-    const savedPetugas = localStorage.getItem("opname_petugas");
-    const savedStore = localStorage.getItem("opname_store");
-    if (savedPetugas) $("petugas").value = savedPetugas;
-    if (savedStore) $("store").value = savedStore;
+    const savedPetugas = localStorage.getItem("opname_petugas");
+    const savedStore = localStorage.getItem("opname_store");
+    if (savedPetugas) $("petugas").value = savedPetugas;
+    if (savedStore) $("store").value = savedStore;
 
-    function toast(message, type = "normal") {
-      const el = $("toast");
-      el.textContent = message;
-      el.style.background = type === "error" ? "#b42318" : type === "success" ? "#15803d" : "#172033";
-      el.style.display = "block";
-      clearTimeout(window.toastTimer);
-      window.toastTimer = setTimeout(() => { el.style.display = "none"; }, 3200);
-    }
+    function toast(message, type = "normal") {
+      const el = $("toast");
+      el.textContent = message;
+      el.style.background = type === "error" ? "#b42318" : type === "success" ? "#15803d" : "#172033";
+      el.style.display = "block";
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => { el.style.display = "none"; }, 3200);
+    }
 
-    function saveSettings() {
-      localStorage.setItem("opname_petugas", $("petugas").value.trim());
-      localStorage.setItem("opname_store", $("store").value);
-    }
+    function saveSettings() {
+      localStorage.setItem("opname_petugas", $("petugas").value.trim());
+      localStorage.setItem("opname_store", $("store").value);
+    }
 
-    async function apiJson(endpoint, options = {}) {
-      const baseUrl = getBackendUrl();
-      if (!baseUrl) throw new Error("URL Server cabang ini belum dikonfigurasi.");
-      
-      const fullUrl = baseUrl + endpoint;
-      const res = await fetch(fullUrl, options);
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.status === "error") {
-        throw new Error(data.pesan || "Request gagal.");
-      }
-      return data;
-    }
+    async function apiJson(endpoint, options = {}) {
+      const baseUrl = getBackendUrl();
+      if (!baseUrl) throw new Error("URL Server cabang ini belum dikonfigurasi.");
+      
+      const fullUrl = baseUrl + endpoint;
+      const res = await fetch(fullUrl, options);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.status === "error") {
+        throw new Error(data.pesan || "Request gagal.");
+      }
+      return data;
+    }
 
-    async function logActivity(aksi) {
-      const payload = {
-        petugas: $("petugas").value.trim() || "Anonim",
-        cabang: $("store").value,
-        aksi: aksi
-      };
-      try {
-        await fetch(getBackendUrl() + "/api/log_action", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-      } catch (err) {
-        console.log("Gagal mencatat log", err);
-      }
-    }
+    async function logActivity(aksi) {
+      const payload = {
+        petugas: $("petugas").value.trim() || "Anonim",
+        cabang: $("store").value,
+        aksi: aksi
+      };
+      try {
+        await fetch(getBackendUrl() + "/api/log_action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.log("Gagal mencatat log", err);
+      }
+    }
 
-    async function checkServer() {
-      try {
-        await apiJson("/api/config");
-        $("connectionStatus").textContent = "Terhubung: " + $("store").value;
-        $("connectionStatus").style.color = "var(--success)";
-      } catch (err) {
-        $("connectionStatus").textContent = "Koneksi " + $("store").value + " Terputus";
-        $("connectionStatus").style.color = "var(--danger)";
-      }
-    }
+    async function checkServer() {
+      try {
+        await apiJson("/api/config");
+        $("connectionStatus").textContent = "Terhubung: " + $("store").value;
+        $("connectionStatus").style.color = "var(--success)";
+      } catch (err) {
+        $("connectionStatus").textContent = "Koneksi " + $("store").value + " Terputus";
+        $("connectionStatus").style.color = "var(--danger)";
+      }
+    }
 
-    function renderItem(item) {
-      state.currentItem = item;
-      $("itemResult").innerHTML = `
-        <strong>${escapeHtml(item.nama_barang)}</strong>
-        <span>Kode item: ${escapeHtml(item.kodeitem)}</span>
-      `;
-      // AUTO-FOCUS: Langsung arahkan kursor ke kolom QTY setelah barang ditemukan
-      $("qty").focus();
-    }
+    function renderItem(item) {
+      state.currentItem = item;
+      $("itemResult").innerHTML = `
+        <strong>${escapeHtml(item.nama_barang)}</strong>
+        <span>Kode item: ${escapeHtml(item.kodeitem)}</span>
+      `;
+      $("qty").focus();
+    }
 
-    function resetItem(message = "Siap scan berikutnya.") {
-      state.currentItem = null;
-      $("barcode").value = "";
-      $("qty").value = "";
-      $("itemResult").innerHTML = `<strong>${message}</strong><span>Ketik manual, scan kamera, atau gunakan alat barcode scanner.</span>`;
-      // AUTO-FOCUS: Langsung kembalikan kursor ke kolom barcode agar kasir bisa langsung tembak barang baru!
-      $("barcode").focus();
-    }
+    function resetItem(message = "Siap scan berikutnya.") {
+      state.currentItem = null;
+      $("barcode").value = "";
+      $("qty").value = "";
+      $("itemResult").innerHTML = `<strong>${message}</strong><span>Scan barcode atau masukkan kode item manual.</span>`;
+      $("barcode").focus();
+    }
 
-    // ==========================================
-    // LOGIKA AUTO-SUGGEST DENGAN DEBOUNCE
-    // ==========================================
-    let debounceTimer;
-    
-    $("barcode").addEventListener("input", (e) => {
-      clearTimeout(debounceTimer); 
-      const val = e.target.value.trim();
-      const suggestionsBox = $("suggestions");
-      
-      if (val.length < 3) {
-        suggestionsBox.style.display = "none";
-        return;
-      }
-      
-      debounceTimer = setTimeout(async () => {
-        try {
-          const store = $("store").value;
-          // PERHATIAN: Fitur auto-suggest ini membutuhkan endpoint /api/cari_nama di Python Anda.
-          const data = await apiJson(`/api/cari_nama?store=${encodeURIComponent(store)}&keyword=${encodeURIComponent(val)}`);
-          
-          if (data.data && data.data.length > 0) {
-            suggestionsBox.innerHTML = "";
-            data.data.forEach(item => {
-              const div = document.createElement("div");
-              div.className = "suggestion-item";
-              div.innerHTML = `<strong>${escapeHtml(item.namaitem)}</strong><span>Kode: ${escapeHtml(item.kodeitem)}</span>`;
-              
-              div.addEventListener("click", () => {
-                $("barcode").value = item.kodeitem; 
-                suggestionsBox.style.display = "none";
-                findItem(item.kodeitem); 
-              });
-              
-              suggestionsBox.appendChild(div);
-            });
-            suggestionsBox.style.display = "block";
-          } else {
-            suggestionsBox.style.display = "none";
-          }
-        } catch (err) {
-          console.log("Gagal memuat suggest:", err);
-        }
-      }, 500); 
-    });
+    // ==========================================
+    // LOGIKA AUTO-SUGGEST DENGAN DEBOUNCE
+    // ==========================================
+    let debounceTimer;
+    
+    $("barcode").addEventListener("input", (e) => {
+      clearTimeout(debounceTimer); // Batalkan timer jika kasir masih mengetik
+      const val = e.target.value.trim();
+      const suggestionsBox = $("suggestions");
+      
+      // Jika kasir menghapus tulisan atau kurang dari 3 huruf, sembunyikan kotak sugesti
+      if (val.length < 3) {
+        suggestionsBox.style.display = "none";
+        return;
+      }
+      
+      // Jika kasir berhenti mengetik selama 0.5 detik, baru tembak ke server
+      debounceTimer = setTimeout(async () => {
+        try {
+          const store = $("store").value;
+          const data = await apiJson(`/api/cari_nama?store=${encodeURIComponent(store)}&keyword=${encodeURIComponent(val)}`);
+          
+          if (data.data && data.data.length > 0) {
+            suggestionsBox.innerHTML = "";
+            data.data.forEach(item => {
+              const div = document.createElement("div");
+              div.className = "suggestion-item";
+              div.innerHTML = `<strong>${escapeHtml(item.namaitem)}</strong><span>Kode: ${escapeHtml(item.kodeitem)}</span>`;
+              
+              // Jika salah satu sugesti diklik
+              div.addEventListener("click", () => {
+                $("barcode").value = item.kodeitem; // Isi input dengan kode item pastinya
+                suggestionsBox.style.display = "none";
+                findItem(item.kodeitem); // Langsung eksekusi pencarian
+              });
+              
+              suggestionsBox.appendChild(div);
+            });
+            suggestionsBox.style.display = "block";
+          } else {
+            suggestionsBox.style.display = "none";
+          }
+        } catch (err) {
+          console.log("Gagal memuat suggest:", err);
+        }
+      }, 500); 
+    });
 
-    document.addEventListener("click", function (e) {
-      if (e.target !== $("barcode") && !$("suggestions").contains(e.target)) {
-        $("suggestions").style.display = "none";
-      }
-    });
-    // ==========================================
+    // Sembunyikan sugesti kalau user klik di luar kotak
+    document.addEventListener("click", function (e) {
+      if (e.target !== $("barcode") && !$("suggestions").contains(e.target)) {
+        $("suggestions").style.display = "none";
+      }
+    });
+    // ==========================================
 
-    async function findItem(barcodeValue) {
-      saveSettings();
-      const store = $("store").value;
-      const barcode = String(barcodeValue || $("barcode").value).trim();
-      if (!$("petugas").value.trim()) return toast("Isi nama petugas dulu.", "error");
-      if (!barcode) return toast("Barcode / Kode Item masih kosong.", "error");
 
-      $("itemResult").innerHTML = "<strong>Mencari barang...</strong><span>Mohon tunggu.</span>";
-      $("suggestions").style.display = "none"; 
-      
-      try {
-        const data = await apiJson(`/api/cek_barang?store=${encodeURIComponent(store)}&barcode=${encodeURIComponent(barcode)}`);
-        renderItem(data);
-      } catch (err) {
-        state.currentItem = null;
-        $("itemResult").innerHTML = `<strong>Barang tidak ditemukan</strong><span>${escapeHtml(err.message)}</span>`;
-        $("barcode").select();
-      }
-    }
+    async function findItem(barcodeValue) {
+      saveSettings();
+      const store = $("store").value;
+      const barcode = String(barcodeValue || $("barcode").value).trim();
+      if (!$("petugas").value.trim()) return toast("Isi nama petugas dulu.", "error");
+      if (!barcode) return toast("Barcode masih kosong.", "error");
 
-    async function saveScan() {
-      saveSettings();
-      if (!state.currentItem) return toast("Cari barang dulu.", "error");
-      const qty = Number($("qty").value);
-      if (!qty || qty <= 0) return toast("Isi qty fisik yang benar.", "error");
+      $("itemResult").innerHTML = "<strong>Mencari barang...</strong><span>Mohon tunggu.</span>";
+      $("suggestions").style.display = "none"; // Sembunyikan kotak sugesti
+      
+      try {
+        const data = await apiJson(`/api/cek_barang?store=${encodeURIComponent(store)}&barcode=${encodeURIComponent(barcode)}`);
+        renderItem(data);
+      } catch (err) {
+        state.currentItem = null;
+        $("itemResult").innerHTML = `<strong>Barang tidak ditemukan</strong><span>${escapeHtml(err.message)}</span>`;
+        $("barcode").select();
+      }
+    }
 
-      const payload = {
-        petugas: $("petugas").value.trim(),
-        cabang: $("store").value,
-        barcode: $("barcode").value.trim() || state.currentItem.kodeitem,
-        kode_item: state.currentItem.kodeitem,
-        nama_barang: state.currentItem.nama_barang,
-        qty_fisik: qty,
-        qty_inventory: Number(state.currentItem.stok_sistem || 0),
-        hpp_satuan: Number(state.currentItem.hpp_satuan || 0)
-      };
+    async function saveScan() {
+      saveSettings();
+      if (!state.currentItem) return toast("Cari barang dulu.", "error");
+      const qty = Number($("qty").value);
+      if (!qty || qty <= 0) return toast("Isi qty fisik yang benar.", "error");
 
-      try {
-        const data = await apiJson("/api/simpan", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        state.rows = data.data || [];
-        renderTable();
-        resetItem("Data tersimpan.");
-        toast("Scan tersimpan.", "success");
-      } catch (err) {
-        toast(err.message, "error");
-      }
-    }
+      const payload = {
+        petugas: $("petugas").value.trim(),
+        cabang: $("store").value,
+        barcode: $("barcode").value.trim() || state.currentItem.kodeitem,
+        kode_item: state.currentItem.kodeitem,
+        nama_barang: state.currentItem.nama_barang,
+        qty_fisik: qty,
+        qty_inventory: Number(state.currentItem.stok_sistem || 0),
+        hpp_satuan: Number(state.currentItem.hpp_satuan || 0)
+      };
 
-    async function loadRows() {
-      try {
-        const data = await apiJson(`/api/list/${encodeURIComponent($("store").value)}`);
-        state.rows = data.data || [];
-        renderTable();
-      } catch (err) {
-        toast(err.message, "error");
-      }
-    }
+      try {
+        const data = await apiJson("/api/simpan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        state.rows = data.data || [];
+        renderTable();
+        resetItem("Data tersimpan.");
+        toast("Scan tersimpan.", "success");
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
 
-    function renderTable() {
-      const currentPetugas = $("petugas").value.trim().toLowerCase();
-      const myRows = state.rows.filter(row => row.petugas.toLowerCase() === currentPetugas);
+    async function loadRows() {
+      try {
+        const data = await apiJson(`/api/list/${encodeURIComponent($("store").value)}`);
+        state.rows = data.data || [];
+        renderTable();
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
 
-      if (!myRows.length) {
-        $("tableWrap").innerHTML = '<div class="empty">Belum ada data scan milik Anda di cabang ini.</div>';
-        return;
-      }
+    function renderTable() {
+      const currentPetugas = $("petugas").value.trim().toLowerCase();
+      const myRows = state.rows.filter(row => row.petugas.toLowerCase() === currentPetugas);
 
-      const html = `
-        <table>
-          <thead>
-            <tr>
-              <th>Barang</th>
-              <th>Barcode</th>
-              <th class="qty">Fisik</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${myRows.map(row => `
-              <tr>
-                <td>
-                  <strong>${escapeHtml(row.nama_barang)}</strong>
-                  <span class="pill">${escapeHtml(row.kode_item)} / ${escapeHtml(row.kode_gudang)}</span>
-                </td>
-                <td>${escapeHtml(row.barcode)}</td>
-                <td class="qty">${formatNumber(row.qty_fisik)}</td>
-                <td><button class="btn-danger" type="button" style="padding:6px 10px;" onclick="deleteRow(${row.id})">Del</button></td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      `;
-      $("tableWrap").innerHTML = html;
-    }
+      if (!myRows.length) {
+        $("tableWrap").innerHTML = '<div class="empty">Belum ada data scan milik Anda di cabang ini.</div>';
+        return;
+      }
 
-    async function deleteRow(id) {
-      if (!confirm("Hapus item ini?")) return;
-      try {
-        await apiJson(`/api/hapus/${id}`, { method: "POST" });
-        await loadRows();
-      } catch (err) {
-        toast(err.message, "error");
-      }
-    }
+      const html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Barang</th>
+              <th>Barcode</th>
+              <th class="qty">Fisik</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${myRows.map(row => `
+              <tr>
+                <td>
+                  <strong>${escapeHtml(row.nama_barang)}</strong>
+                  <span class="pill">${escapeHtml(row.kode_item)} / ${escapeHtml(row.kode_gudang)}</span>
+                </td>
+                <td>${escapeHtml(row.barcode)}</td>
+                <td class="qty">${formatNumber(row.qty_fisik)}</td>
+                <td><button class="btn-danger" type="button" style="padding:6px 10px;" onclick="deleteRow(${row.id})">Del</button></td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+      $("tableWrap").innerHTML = html;
+    }
 
-    async function clearRows() {
-      const store = $("store").value;
-      if (!confirm(`HATI-HATI! Yakin ingin mengosongkan SEMUA data scan tim untuk cabang ${store}?`)) return;
-      
-      logActivity("Klik Tombol KOSONGKAN"); 
-      
-      try {
-        await apiJson(`/api/kosongkan/${encodeURIComponent(store)}`, { method: "POST" });
-        state.rows = [];
-        renderTable();
-        toast("Semua data dikosongkan.", "success");
-      } catch (err) {
-        toast(err.message, "error");
-      }
-    }
+    async function deleteRow(id) {
+      if (!confirm("Hapus item ini?")) return;
+      try {
+        await apiJson(`/api/hapus/${id}`, { method: "POST" });
+        await loadRows();
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
 
-    async function syncRows() {
-      const store = $("store").value;
-      if (!state.rows.length) return toast("Belum ada data untuk dikirim.", "error");
-      if (!confirm(`Kirim seluruh data tim (gabungan) cabang ${store} ke Google Sheet?`)) return;
-      
-      logActivity("Klik Tombol KIRIM KE SHEET");
-      
-      const btn = $("syncBtn");
-      const originalText = btn.textContent;
-      
-      btn.disabled = true;
-      btn.textContent = "⏳ Mengirim...";
-      
-      try {
-        const data = await apiJson(`/api/sync/${encodeURIComponent(store)}`, { method: "POST" });
-        toast(data.pesan || "Data terkirim ke Google Sheet.", "success");
-        await loadRows();
-      } catch (err) {
-        toast(err.message, "error");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = originalText;
-      }
-    }
+    async function clearRows() {
+      const store = $("store").value;
+      if (!confirm(`HATI-HATI! Yakin ingin mengosongkan SEMUA data scan tim untuk cabang ${store}?`)) return;
+      
+      logActivity("Klik Tombol KOSONGKAN"); 
+      
+      try {
+        await apiJson(`/api/kosongkan/${encodeURIComponent(store)}`, { method: "POST" });
+        state.rows = [];
+        renderTable();
+        toast("Semua data dikosongkan.", "success");
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
 
-    async function executeDownload(mode) {
-      const store = $("store").value;
-      const petugas = $("petugas").value.trim();
-      const baseUrl = getBackendUrl();
-      
-      if (!baseUrl) return toast("Sistem gagal mengalihkan download.", "error");
-      if (!petugas) return toast("Isi nama petugas dulu untuk mendownload file khusus Anda.", "error");
-      
-      logActivity(`Klik Tombol DOWNLOAD SO (${mode.toUpperCase()})`); 
-      
-      const btn = mode === "global" ? $("downloadGlobalBtn") : $("downloadBtn");
-      const originalText = btn.textContent;
-      
-      btn.disabled = true;
-      btn.textContent = "⏳ Memproses...";
+    async function syncRows() {
+      const store = $("store").value;
+      if (!state.rows.length) return toast("Belum ada data untuk dikirim.", "error");
+      if (!confirm(`Kirim seluruh data tim (gabungan) cabang ${store} ke Google Sheet?`)) return;
+      
+      logActivity("Klik Tombol KIRIM KE SHEET");
+      
+      const btn = $("syncBtn");
+      const originalText = btn.textContent;
+      
+      btn.disabled = true;
+      btn.textContent = "⏳ Mengirim...";
+      
+      try {
+        const data = await apiJson(`/api/sync/${encodeURIComponent(store)}`, { method: "POST" });
+        toast(data.pesan || "Data terkirim ke Google Sheet.", "success");
+        await loadRows();
+      } catch (err) {
+        toast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
 
-      try {
-        const url = `${baseUrl}/download/${encodeURIComponent(store)}?mode=${mode}&petugas=${encodeURIComponent(petugas)}`;
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(errText || "Gagal mengunduh file SO.");
-        }
+    async function executeDownload(mode) {
+      const store = $("store").value;
+      const petugas = $("petugas").value.trim();
+      const baseUrl = getBackendUrl();
+      
+      if (!baseUrl) return toast("Sistem gagal mengalihkan download.", "error");
+      if (!petugas) return toast("Isi nama petugas dulu untuk mendownload file khusus Anda.", "error");
+      
+      logActivity(`Klik Tombol DOWNLOAD SO (${mode.toUpperCase()})`); 
+      
+      // Deteksi tombol mana yang diklik agar animasinya tepat sasaran
+      const btn = mode === "global" ? $("downloadGlobalBtn") : $("downloadBtn");
+      const originalText = btn.textContent;
+      
+      // Kunci tombol dan ubah teks jadi animasi loading
+      btn.disabled = true;
+      btn.textContent = "⏳ Memproses...";
 
-        let filename = `format_so_${store}_${mode}_${petugas}.xlsx`;
-        const disposition = response.headers.get('content-disposition');
-        if (disposition && disposition.includes('filename=')) {
-            filename = disposition.split('filename=')[1].replace(/["']/g, "");
-        }
+      try {
+        const url = `${baseUrl}/download/${encodeURIComponent(store)}?mode=${mode}&petugas=${encodeURIComponent(petugas)}`;
+        
+        // Meminta file ke Python dan menunggunya selesai menggunakan fetch
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(errText || "Gagal mengunduh file SO.");
+        }
 
-        const blob = await response.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = downloadUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        
-        a.remove();
-        window.URL.revokeObjectURL(downloadUrl);
-        
-        toast(`File SO ${mode.toUpperCase()} berhasil diunduh.`, "success");
-      } catch (err) {
-        toast("Download gagal: " + err.message, "error");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = originalText;
-      }
-    }
+        // Mengambil nama file asli dari server, atau pakai nama cadangan
+        let filename = `format_so_${store}_${mode}_${petugas}.xlsx`;
+        const disposition = response.headers.get('content-disposition');
+        if (disposition && disposition.includes('filename=')) {
+            filename = disposition.split('filename=')[1].replace(/["']/g, "");
+        }
 
-    $("downloadBtn").addEventListener("click", () => executeDownload("partial"));
+        // Mengubah data yang diterima menjadi blob dan mendownloadnya
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Membersihkan url sementara setelah file terdownload
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+        
+        toast(`File SO ${mode.toUpperCase()} berhasil diunduh.`, "success");
+      } catch (err) {
+        toast("Download gagal: " + err.message, "error");
+      } finally {
+        // Kembalikan tombol ke warna dan tulisan aslinya
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
 
-    $("downloadGlobalBtn").addEventListener("click", () => {
-      const confirmGlobal = confirm(
-        "PENTING: Anda akan melakukan DOWNLOAD SO GLOBAL (Sapu Jagat).\n\n" +
-        "Sistem akan menarik seluruh Master Item dari IPOS dan mengubah stok barang yang TIDAK DI-SCAN menjadi 0.\n" +
-        "Proses ini mungkin membutuhkan waktu beberapa detik.\n\n" +
-        "Lanjutkan?"
-      );
-      if (confirmGlobal) executeDownload("global");
-    });
+    $("downloadBtn").addEventListener("click", () => executeDownload("partial"));
 
-    async function startScanner() {
-      if (state.scanning) return;
-      saveSettings();
-      if (!$("petugas").value.trim()) return toast("Isi nama petugas dulu.", "error");
+    $("downloadGlobalBtn").addEventListener("click", () => {
+      const confirmGlobal = confirm(
+        "PENTING: Anda akan melakukan DOWNLOAD SO GLOBAL (Sapu Jagat).\n\n" +
+        "Sistem akan menarik seluruh Master Item dari IPOS dan mengubah stok barang yang TIDAK DI-SCAN menjadi 0.\n" +
+        "Proses ini mungkin membutuhkan waktu beberapa detik.\n\n" +
+        "Lanjutkan?"
+      );
+      if (confirmGlobal) executeDownload("global");
+    });
 
-      $("reader").style.display = "block";
-      $("scanBtn").disabled = true;
-      $("stopBtn").disabled = false;
+    async function startScanner() {
+      if (state.scanning) return;
+      saveSettings();
+      if (!$("petugas").value.trim()) return toast("Isi nama petugas dulu.", "error");
 
-      try {
-        state.scanner = new Html5Qrcode("reader");
-        await state.scanner.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 250, height: 160 } },
-          async (decodedText) => {
-            await stopScanner();
-            $("barcode").value = decodedText;
-            findItem(decodedText);
-          }
-        );
-        state.scanning = true;
-      } catch (err) {
-        await stopScanner();
-        toast("Kamera gagal dibuka. Pastikan izin kamera aktif dan akses via HTTPS.", "error");
-      }
-    }
+      $("reader").style.display = "block";
+      $("scanBtn").disabled = true;
+      $("stopBtn").disabled = false;
 
-    async function stopScanner() {
-      if (state.scanner) {
-        try {
-          await state.scanner.stop();
-        } catch (err) {}
-        try {
-          state.scanner.clear();
-        } catch (err) {}
-      }
-      state.scanner = null;
-      state.scanning = false;
-      $("reader").style.display = "none";
-      $("scanBtn").disabled = false;
-      $("stopBtn").disabled = true;
-    }
+      try {
+        state.scanner = new Html5Qrcode("reader");
+        await state.scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 160 } },
+          async (decodedText) => {
+            await stopScanner();
+            $("barcode").value = decodedText;
+            findItem(decodedText);
+          }
+        );
+        state.scanning = true;
+      } catch (err) {
+        await stopScanner();
+        toast("Kamera gagal dibuka. Pastikan izin kamera aktif dan akses via HTTPS.", "error");
+      }
+    }
 
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+    async function stopScanner() {
+      if (state.scanner) {
+        try {
+          await state.scanner.stop();
+        } catch (err) {}
+        try {
+          state.scanner.clear();
+        } catch (err) {}
+      }
+      state.scanner = null;
+      state.scanning = false;
+      $("reader").style.display = "none";
+      $("scanBtn").disabled = false;
+      $("stopBtn").disabled = true;
+    }
 
-    function formatNumber(value) {
-      return Number(value || 0).toLocaleString("id-ID", { maximumFractionDigits: 2 });
-    }
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-    $("petugas").addEventListener("input", () => {
-      saveSettings();
-      renderTable();
-    });
-    
-    $("store").addEventListener("change", () => { 
-      saveSettings(); 
-      checkServer();
-      loadRows(); 
-      resetItem("Cabang diganti."); 
-    });
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString("id-ID", { maximumFractionDigits: 2 });
+    }
 
-    $("findBtn").addEventListener("click", () => findItem());
-    $("saveBtn").addEventListener("click", saveScan);
-    $("scanBtn").addEventListener("click", startScanner);
-    $("stopBtn").addEventListener("click", stopScanner);
-    $("syncBtn").addEventListener("click", syncRows);
-    $("clearBtn").addEventListener("click", clearRows);
-    
-    // [INTI ALUR KETIK MANUAL / SCAN FISIK] 
-    $("barcode").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        findItem(); // Jika dienter (oleh keyboard atau scanner), cari barang!
-      }
-    });
-    
-    $("qty").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        saveScan(); // Jika enter ditekan saat mengisi Qty, langsung simpan!
-      }
-    });
+    $("petugas").addEventListener("input", () => {
+      saveSettings();
+      renderTable();
+    });
+    
+    $("store").addEventListener("change", () => { 
+      saveSettings(); 
+      checkServer();
+      loadRows(); 
+      resetItem("Cabang diganti."); 
+    });
 
-    checkServer();
-    loadRows();
-  </script>
+    $("findBtn").addEventListener("click", () => findItem());
+    $("saveBtn").addEventListener("click", saveScan);
+    $("scanBtn").addEventListener("click", startScanner);
+    $("stopBtn").addEventListener("click", stopScanner);
+    $("syncBtn").addEventListener("click", syncRows);
+    $("clearBtn").addEventListener("click", clearRows);
+    
+    $("barcode").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        findItem();
+      }
+    });
+    $("qty").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveScan();
+      }
+    });
+
+    checkServer();
+    loadRows();
+  </script>
 </body>
 </html>
